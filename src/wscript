@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+
+
+def configure(ctx):
+	pass
+	
+
+def build(ctx):
+	pass
+	

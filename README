@@ -1,0 +1,9 @@
+src - The source files, subsystem headers/implementations, umbra headers,
+	and internal modules
+
+ext - external libraries and dependencies needed for building umbra. They
+	don't make part of umbra itself.
+
+lib - Umbra libraries, in C/C++ or umbra code.
+
+
