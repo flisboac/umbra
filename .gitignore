@@ -1,4 +1,5 @@
 . .. .cproject .geany .git .project .pydevproject .settings
-**~
+**/.*
+**/*~
 /build/**
 /misc/**
