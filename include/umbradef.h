@@ -5,6 +5,25 @@
 
 #include "umbracfg.h"
 
+/*=============================================================================
+ * ENUMERATIONS
+ */
+
+typedef enum um_Bool {
+	um_False = 0,
+	um_True
+} um_Bool;
+
+/**
+ * An enumeration with all Umbra's error numbers.
+ */
+typedef enum um_EEcode {
+	um_EECODE_NONE = 0,
+	um_EECODE_OK,
+	um_EECODE_ERROR,
+	um_EECODE_MAX
+} um_EEcode;
+
 #ifdef __cplusplus
 #	define um_EXPORTC       export "C"
 #	define um_EXPORTC_BEGIN um_EXPORTC {
@@ -53,14 +72,6 @@
 #	endif
 #endif
 
-#ifndef um_WIDE
-#	if defined(WIDE) | defined(_WIDE) | defined(UNICODE) | defined(_UNICODE)
-#		define um_WIDE 1
-#	else
-#		define um_WIDE 0
-#	endif
-#endif
-
 #if um_STATIC
 #	if um_BUILDING
 #		define um_API   
@@ -88,29 +99,6 @@
 #endif
 
 /*=============================================================================
- * STRINGS AND STREAMS
- */
-
-#if um_WIDE
-#	include <wchar.h>
-#	define um_CHAR     wchar_t
-#	define um_CHARINT  wint_t
-#	define um_EOF      WEOF
-#	define uS(s)       L ## s
-#	define um_STRQT(s) L ## #s
-#	define um_STRFY(s) um_STRQT(s)
-#	define uT(s)       uS(s)
-#else
-#	define um_CHAR     char
-#	define um_CHARINT  int
-#	define um_EOF      EOF
-#	define uS(s)       s
-#	define um_STRQT(s) #s
-#	define um_STRFY(s) um_STRQT(s)
-#	define uT(s)       uS(s)
-#endif
-
-/*=============================================================================
  * INTEGERS
  */
 
@@ -119,7 +107,7 @@
 #endif
 
 #if um_INTTYPE == 0
-#	define um_INT     long int
+#	define um_TYPE_INT     long int
 /*
 #	include <limits.h>
 #	define um_INTMAX  INT_MAX
@@ -142,7 +130,7 @@
 #endif
 
 #if um_FLOATTYPE == 0
-#	define um_FLOAT     double
+#	define um_TYPE_FLOAT     double
 /*
 #	include <limits.h>
 #	include <math.h>

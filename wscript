@@ -5,15 +5,17 @@ VERSION = "0.1.0"
 
 # Top of the source tree
 top = '.'
-# Umbra's sources, where all subsystems are held
-src = 'src'
 # Where build will take place
 bld = 'build'
 out = bld
-# Where all external libraries and tools live
-ext = 'ext'
-# Umbra libraries
-lib = 'lib'
+
+# This list is in the correct recursion order.
+ext = 'ext'     # Where all external libraries and tools live
+inc = 'include' # Umbra's include files
+src = 'src'     # Umbra's sources, where all subsystems are held
+lib = 'lib'     # Umbra libraries
+doc = 'doc'     # documentation config files
+tst = 'test'    # Unit tests
 
 """
 - The build order is ext -> src -> lib
@@ -68,6 +70,7 @@ def options(ctx):
 	"""Adds options to the script.
 	"""
 	ctx.load('compiler_c compiler_cxx')
+	
 	ctx.add_option('-b', '--build-mode',
 		action = 'store',
 		dest = 'build_mode',
@@ -78,6 +81,7 @@ def options(ctx):
 			"Sets the build mode.\n" + 
 			"For a list of available build modes,\n" +
 			"run `waf info --build-modes`.")
+	
 	ctx.add_option('-C', '--compiler',
 		action = 'store',
 		dest = 'compiler_name',
@@ -85,6 +89,7 @@ def options(ctx):
 		choices = compilers,
 		default = 'default',
 		help = "Chooses the compiler used to build the library.")
+	
 	ctx.add_option('-P', '--platform',
 		action = 'store',
 		dest = 'platform_name',
@@ -95,6 +100,7 @@ def options(ctx):
 			"compilation or for merely using\n" + 
 			"different options). For a list of supported\n" + 
 			"platforms, run `waf info --platforms`")
+	
 	ctx.add_option('-F', '--feature',
 		action = 'append',
 		type = 'string',
@@ -108,26 +114,31 @@ def options(ctx):
 			"For a general list of supported features, run\n"
 			"`waf info --features`. For a list of feature support\n"
 			"per module, run `waf info --modules`.")
+	
 	ctx.add_option('--platforms',
 		action = 'store_true',
 		dest = 'use_platforms',
 		default = True,
 		help = "Flag used to list the supported platforms.")
+	
 	ctx.add_option('--build-modes',
 		action = 'store_true',
 		dest = 'use_build_modes',
 		default = False,
 		help = "Flag used to list build modes.")
+	
 	ctx.add_option('--features',
 		action = 'store_true',
 		dest = 'use_features',
 		default = False,
 		help = "Flag used to list globally-recognized features.")
+	
 	ctx.add_option('--compilers',
 		action = 'store_true',
 		dest = 'use_compilers',
 		default = False,
 		help = "Flag used to list all supported compilers.")
+	
 	ctx.add_option('-e', '--env',
 		action = 'append',
 		dest = 'env_flags',
@@ -156,11 +167,24 @@ def configure(ctx):
 	else:
 		ctx.load('compiler_c compiler_cxx')
 	
+	ctx.recurse(ext)
+	ctx.recurse(inc)
+	ctx.recurse(src)
+	ctx.recurse(lib)
+	ctx.recurse(doc)
+	ctx.recurse(tst)
 
 def build(ctx):
-	ctx.recurse('ext')
-	ctx.recurse('src')
-	ctx.recurse('lib')
+	ctx.recurse(ext)
+	ctx.recurse(inc)
+	ctx.recurse(src)
+	ctx.recurse(lib)
+	ctx.recurse(doc)
+	
+	# Test won't be recursed here, to leave the user to choose when to run
+	# the tests, because they may take time to finish. 
+	#ctx.recurse(tst)
+
 
 
 

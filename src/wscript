@@ -2,9 +2,9 @@
 
 
 def configure(ctx):
-	pass
+	print("Nothing to configure in 'src'.")
 	
 
 def build(ctx):
-	pass
+	print("Nothing to build in 'src'.")
 	

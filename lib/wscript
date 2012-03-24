@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+
+
+def configure(ctx):
+	print("Nothing to configure in 'lib'.")
+	
+
+def build(ctx):
+	print("Nothing to build in 'lib'.")
+	
