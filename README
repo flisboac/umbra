@@ -7,3 +7,43 @@ ext - external libraries and dependencies needed for building umbra. They
 lib - Umbra libraries, in C/C++ or umbra code.
 
 
+Module letters (and prefixes)
+	# Utility modules
+	Z - [zio] File/Stream I/O, String functions, Character conversion
+		ctype, string, sbuffer, buffer, file, cconv
+	R - [re]  Regex
+	M - [mem] Memory management
+	O - [obj] Object definitions
+	J - [gc]  Garbage collector (J for junk)
+	S - [sys] Operating System utilities
+	N - [num] Numbers (Integers, Floats, Complex, Matrices, Long numbers, Math)
+	H - [hsh] Object hashtable implementation (array/map, methods)
+	G - [dbg] Debug interface
+	K - [cls] Default Umbra API interface declaration
+
+	# Pipeline modules
+	L - [lex] Tokenizer/Lexer
+	Y - [prs] Parser/AST Transformation
+	C - [cc]  Compiler/Bytecode definition
+	D - [dd]  Dumper/Loader
+	V - [vm]  Virtual machine execution/Opcodes declaration
+
+
+number
+	integer
+	float
+	complex
+	ratio
+	matrix
+stream
+	string
+	file
+regex
+bool
+object
+function
+	method
+	lambda
+	block
+	continuation
+	iterator

@@ -1,0 +1,86 @@
+
+NAME=umbra
+MAJOR=0
+MINOR=1
+PATCH=0
+REVISION=release
+MINIVERSION=$(MAJOR).$(MINOR)
+VERSION=$(MAJOR).$(MINOR).$(PATCH)-$(REVISION)
+
+TOP=.
+SRC=$(TOP)/src
+OUT=$(TOP)/build
+INC=$(TOP)/include
+EXT=$(TOP)/ext
+DOC=$(TOP)/doc
+PREFIX=$(TOP)/install
+DOXYFILE=$(DOC)/Doxyfile
+DISTFILES=\
+	$(TOP)/README \
+	$(TOP)/VERSION \
+	$(TOP)/Makefile
+
+CC=gcc -c -o
+CXX=g++ -c -o
+SLINK=ar rcu
+DLINK=gcc -shared -o
+ELINK=gcc -o
+RM=rm -f
+RMDIR=rm -rf
+MKDIR=mkdir -p
+TAR=tar -cvzf
+DOXYGEN=doxygen
+INSTALL=install
+INSTALLPREPARE=$(INSTALL) -d
+INSTALLFILES=$(INSTALL) -t
+INSTALLDIR=$(INSTALLFILES)
+
+DISTPFX=
+DISTSFX=.tgz
+SLIBPFX=lib
+SLIBSFX=.a
+DLIBPFX=lib
+DLIBSFX=.so
+EXECPFX=
+EXECSFX=
+
+DIST=$(DISTPFX)$(NAME)-$(VERSION)$(DISTSFX)
+SLIB=$(SLIBPFX)$(NAME)$(MINIVERSION)$(SLIBSFX)
+DLIB=$(DLIBPFX)$(NAME)$(MINIVERSION)$(DLIBSFX)
+EXEC=$(EXECPFX)$(NAME)$(MINIVERSION)$(EXECSFX)
+CFLAGS=-O2 -fPIC -I$(INC) $(MYCFLAGS)
+CXXFLAGS=-O2 -fPIC -I$(INC) $(MYCXXFLAGS)
+LIBS=-lm $(MYLIBS)
+ELIBS=-l$(DLIB) $(MYELIBS)
+
+OBJS=
+DOBJS=
+EOBJS=
+
+all: $(SLIB) $(DLIB) $(EXEC) docs
+
+clean:
+	$(RMDIR) build
+	
+docs:
+	$(DOXYGEN) $(DOXYFILE)
+	
+dist:
+	$(TAR) $(DIST) $(SRC) $(DOC) $(INC) $(EXT) $(DISTFILES)
+
+$(SLIB): $(OBJS)
+	$(SLINK) $@ $?
+	
+$(DLIB): $(OBJS) $(DOBJS)
+	$(DLIB) $@ $? $(LIBS)
+	
+$(EXEC): $(EOBJS)
+	$(ELINK) $@ $? $(ELIBS)
+	
+.c.o:
+	$(CC) $@ $? $(CFLAGS)
+
+.cpp.o:
+	$(CXX) $@ $? $(CXXFLAGS)
+	
+include Makefile.deps

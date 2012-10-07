@@ -3,26 +3,19 @@
 
 #include <stddef.h>
 
-#include "umbracfg.h"
+#include "umbraver.h"
 
 /*=============================================================================
- * ENUMERATIONS
+ * DEFINES
  */
 
-typedef enum um_Bool {
-	um_False = 0,
-	um_True
-} um_Bool;
-
-/**
- * An enumeration with all Umbra's error numbers.
- */
-typedef enum um_EEcode {
-	um_EECODE_NONE = 0,
-	um_EECODE_OK,
-	um_EECODE_ERROR,
-	um_EECODE_MAX
-} um_EEcode;
+#define um_INT_SPECIFIC 0
+#define um_INT_INT 1
+#define um_INT_LONG 2
+#define um_FLOAT_SPECIFIC 0
+#define um_FLOAT_FLOAT 1
+#define um_FLOAT_DOUBLE 2
+#define um_FLOAT_LDOUBLE 3
 
 #ifdef __cplusplus
 #	define um_EXPORTC       export "C"
@@ -34,120 +27,79 @@ typedef enum um_EEcode {
 #	define um_EXPORTC
 #endif
 
-#define um_MAJORBITS 6
-#define um_MINORBITS 12
-#define um_PATCHBITS 14
-#define um_MAJORMASK ((0xffffffffL << (um_MINORBITS + um_PATCHBITS)) & 0xffffffffL)
-#define um_MINORMASK (((0xffffffffL << (um_PATCHBITS)) & (~um_MAJORMASK)) & 0xffffffffL)
-#define um_PATCHMASK (0xffffffffL & (~(um_MAJORMASK | um_MINORMASK)))
-#define um_MAKEVER(major, minor, patch) \
-	((((major) << (um_MINORBITS + um_PATCHBITS)) & um_MAJORMASK) | \
-	(((minor) << um_PATCHBITS) & um_MINORMASK) | \
-	((patch) & um_PATCHMASK)) & 0xffffffffL
-#define um_MAJOR(ver) ((ver) & um_MAJORMASK) >> (um_MINORBITS + um_PATCHBITS)
-#define um_MINOR(ver) ((ver) & um_MINORMASK) >> (um_PATCHBITS)
-#define um_PATCH(ver) ((ver) & um_PATCHMASK)
 
-#ifndef um_STATIC
-#	ifdef STATIC
-#		define um_STATIC 1
-#	else
-#		define um_STATIC 0
-#	endif
-#endif
-
-#ifndef um_DEBUG
-#	ifdef DEBUG
-#		define um_DEBUG 1
-#	else
-#		define um_DEBUG 0
-#	endif
-#endif
-
-#ifndef um_BUILDING
-#	ifdef BUILDING
-#		define um_BUILDING 1
-#	else
-#		define um_BUILDING 0
-#	endif
-#endif
-
-#if um_STATIC
-#	if um_BUILDING
-#		define um_API   
-#		define um_IAPI  static
-#		define um_DATA  
-#		define um_IDATA 
-#	else
-#		define um_API   extern
-#		define um_IAPI  static
-#		define um_DATA  extern
-#		define um_IDATA extern
-#	endif
+#ifdef STATIC
+#	define um_STATIC 1
 #else
-#	if um_BUILDING
-#		define um_API   
-#		define um_IAPI  static
-#		define um_DATA  
-#		define um_IDATA 
-#	else
-#		define um_API   extern
-#		define um_IAPI  static
-#		define um_DATA  extern
-#		define um_IDATA extern
-#	endif
+#	define um_STATIC 0
 #endif
 
-/*=============================================================================
- * INTEGERS
+#ifdef DEBUG
+#	define um_DEBUG 1
+#else
+#	define um_DEBUG 0
+#endif
+
+#ifdef BUILDING
+#	define um_BUILDING 1
+#else
+#	define um_BUILDING 0
+#endif
+
+/**
+ * @class Test
+ * An enumeration with all Umbra's error numbers.
  */
+enum um_EEcode {
+	um_EOS = -1, /** End of stream, file, string or operation. */
+	um_OK,       /** Successful operation. */
+	um_ERROR,    /** An unknown error. */
+	um_ERRSUP,   /** Operation not supported. */
+	um_ERRMEM,   /** Not enough memory. */
+	um_ERRINVAL, /** Invalid state or arguments. */
+	um_ERRDOM,   /** Domain or range error. */
+	um_ERRSYN,   /** Syntax error. */
+	um_ERRCNV,   /** Conversion error. */
+	um_ERRENC,   /** Encoding error. */
+	um_ERRMAX    /** Maximum error code, doesn't represent an error. */
+};
 
-#ifndef um_INTTYPE
-#	define um_INTTYPE 0
-#endif
+enum um_ELockAction {
 
-#if um_INTTYPE == 0
-#	define um_TYPE_INT     long int
-/*
-#	include <limits.h>
-#	define um_INTMAX  INT_MAX
-#	define um_INTMIN  INT_MIN
-#	define um_INTFMT  "%ld"
-#	define um_INTNAME um_STRFY(um_INT)
-#	define uI(i)      i ## L
-*/
-#else
-#	error Unknown integer type. Check your configuration file!
-#endif
+	um_LA_READ,
+	um_LA_TRYREAD,
+	um_LA_WRITE,
+	um_LA_TRYWRITE
+};
 
-/*=============================================================================
- * FLOATS
- * Floats are used for decimal, complex and matrices.
- */
+enum um_EInputFormat {
 
-#ifndef um_FLOATTYPE
-#	define um_FLOATTYPE 0
-#endif
+	um_IF_UNKNOWN = 0,
+	um_IF_SOURCE,
+	um_IF_BYTECODE,
+	um_IF_AST
+};
 
-#if um_FLOATTYPE == 0
-#	define um_TYPE_FLOAT     double
-/*
-#	include <limits.h>
-#	include <math.h>
-#	define um_FLOATMAX  DBL_MAX
-#	define um_FLOATMIN  DBL_MIN
-#	define um_FLOATDIG  DBL_DIG
-#	define um_FLOATEPS  DBL_EPSILON
-#	define um_FLOATHUGE HUGE_VAL
-#	define um_FLOATNAN  
-#	define um_FLOATINF  
-#	define um_FLOATNINF 
-#	define um_FLOATFMT  "%lf"
-#	define um_FLOATNAME um_STRFY(um_FLOAT)
-#	define uF(f)        f ## d
-*/
-#else
-#	error Unknown float type. Check your configuration file!
-#endif
+enum um_Bool {
+	um_False = 0,
+	um_True
+};
+
+typedef struct um_Machine um_Machine;
+typedef enum um_Bool um_Bool;
+typedef enum um_EEcode um_EEcode;
+typedef enum um_ELockAction um_ELockAction;
+typedef enum um_EInputFormat um_EInputFormat;
+
+typedef um_EEcode (*um_FAlloc)(
+	void *ptr,
+	void **obj,
+	size_t oldsz,
+	size_t newsz,
+	unsigned int alignment);
+
+typedef um_EEcode (*um_FCfunction)(um_Machine *M);
+typedef void (*um_FLock)(um_Machine *M, void *ptr, um_ELockAction action);
+typedef um_EEcode (*um_FBuffer)(void *data, char *ptr, long *ptrsz);
 
 #endif /* UMBRADEF_H_ */

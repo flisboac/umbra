@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+def configure(ctx):
+	# Adds the include folder in the includes path
+	ctx.env.INCLUDES.append(ctx.path.abspath())
+	
+
+def build(ctx):
+	pass
+
+	
+def info(ctx):
+	pass

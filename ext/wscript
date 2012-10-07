@@ -8,3 +8,5 @@ def configure(ctx):
 def build(ctx):
 	print("Nothing to build in 'ext'.")
 	
+def info(ctx):
+	pass
