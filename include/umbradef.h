@@ -1,105 +1,111 @@
+/**
+ * @file umbradef.h
+ */
+
 #ifndef UMBRADEF_H_
 #define UMBRADEF_H_
 
-#include <stddef.h>
+#include "umbracfg.h"
 
-#include "umbraver.h"
 
-/*=============================================================================
- * DEFINES
+/*
+ * [ N U M E R I C ] ===========================================================
+ * Definitions are guessed from other definitions in "umbracfg.h".
+ * All in name of organization.
  */
 
-#define um_INT_SPECIFIC 0
-#define um_INT_INT 1
-#define um_INT_LONG 2
-#define um_FLOAT_SPECIFIC 0
-#define um_FLOAT_FLOAT 1
-#define um_FLOAT_DOUBLE 2
-#define um_FLOAT_LDOUBLE 3
+#ifndef um_INTTYPE
+#	define um_INTTYPE um_INT_LONG
+#endif
 
-#ifdef __cplusplus
-#	define um_EXPORTC       export "C"
-#	define um_EXPORTC_BEGIN um_EXPORTC {
-#	define um_EXPORTC_END   }
+#if um_INTTYPE == um_INT_INT
+#	include <limits.h>
+#	define um_TYPE_INT int
+#	define um_INTMAX   INT_MAX
+#	define um_INTMIN   INT_MIN
+#	define um_INTSFMT  ""
+#	define um_INTFROMA um_atoi
+#	define uI(i)       i
+#elif um_INTTYPE == um_INT_LONG
+#	include <limits.h>
+#	define um_TYPE_INT long int
+#	define um_INTMAX   INT_MAX
+#	define um_INTMIN   INT_MIN
+#	define um_INTSFMT  "l"
+#	define um_INTFROMA um_atol
+#	define uI(i)       i ## L
+#elif um_INTTYPE == um_INT_LLONG
+#	include <limits.h>
+#	define um_TYPE_INT long long int
+#	define um_INTMAX   LLONG_MAX
+#	define um_INTMIN   LLONG_MIN
+#	define um_INTFMT   "ll"
+#	define um_INTFROMA um_atoll
+#	define uI(i)       i ## LL
 #else
-#	define um_EXPORTC_BEGIN
-#	define um_EXPORTC_END
-#	define um_EXPORTC
+#	error Unknown integer type. For now, non-standard types are not allowed.
+#endif
+
+#ifndef um_FLOATTYPE
+#	define um_FLOATTYPE um_FLOAT_DOUBLE
+#endif
+
+#if um_FLOATTYPE == um_FLOAT_FLOAT
+#	include <float.h>
+#	define um_TYPE_FLOAT   float
+#	define um_FLOATMAX     FLT_MAX
+#	define um_FLOATMIN     FLT_MIN
+#	define um_FLOATDIG     FLT_DIG
+#	define um_FLOATEPS     FLT_EPSILON
+#	define um_FLOATSFMT    ""
+#	define um_FLOATNAME    um_STRFY(um_FLOAT)
+#	define um_FLOATFROMA   um_atof
+#	define uF(n)           n ## f
+#elif um_FLOATTYPE == um_FLOAT_DOUBLE
+#	include <float.h>
+#	define um_TYPE_FLOAT   double
+#	define um_FLOATMAX     DBL_MAX
+#	define um_FLOATMIN     DBL_MIN
+#	define um_FLOATDIG     DBL_DIG
+#	define um_FLOATEPS     DBL_EPSILON
+#	define um_FLOATSFMT    "l"
+#	define um_FLOATFROMA   um_atod
+#	define um_FLOATNAME    um_STRFY(um_FLOAT)
+#	define uF(n)           n
+#elif um_FLOATTYPE == um_FLOAT_LDOUBLE
+#	include <float.h>
+#	define um_TYPE_FLOAT   long double
+#	define um_FLOATMAX     LDBL_MAX
+#	define um_FLOATMIN     LDBL_MIN
+#	define um_FLOATDIG     LDBL_DIG
+#	define um_FLOATEPS     LDBL_EPSILON
+#	define um_FLOATNAME    um_STRFY(um_FLOAT)
+#	define um_FLOATFROMA   um_atold
+#	define um_FLOATSFMT    "L"
+#	define uF(n)           n ## l
+#else
+#	error Unknown float type. For now, non-standard types are not allowed.
 #endif
 
 
-#ifdef STATIC
-#	define um_STATIC 1
-#else
-#	define um_STATIC 0
+#define um_FLOATTOA(n, s, sz) snprintf(s, sz, um_FLOATFMT, n)
+#define um_INTTOA(n, s, sz)   snprintf(s, sz, um_INTFMT, n)
+#define um_INTFMT    "%" um_INTSFMT "d"
+#define um_FLOATFMT  "%" um_FLOATSFMT "g"
+#define um_INTNAME   um_STRFY(um_TYPE_INT)
+#define um_FLOATNAME um_STRFY(um_TYPE_FLOAT)
+typedef um_TYPE_INT um_Int;
+typedef um_TYPE_FLOAT um_Float;
+
+umAPI int um_atoi(const char *s);
+umAPI long int um_atol(const char *s);
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+	umAPI long long int um_atoll(const char *s);
 #endif
 
-#ifdef DEBUG
-#	define um_DEBUG 1
-#else
-#	define um_DEBUG 0
+umAPI float um_atof(const char *s);
+umAPI double um_atod(const char *s);
+umAPI long double um_atold(const char *s);
+
+
 #endif
-
-#ifdef BUILDING
-#	define um_BUILDING 1
-#else
-#	define um_BUILDING 0
-#endif
-
-/**
- * @class Test
- * An enumeration with all Umbra's error numbers.
- */
-enum um_EEcode {
-	um_EOS = -1, /** End of stream, file, string or operation. */
-	um_OK,       /** Successful operation. */
-	um_ERROR,    /** An unknown error. */
-	um_ERRSUP,   /** Operation not supported. */
-	um_ERRMEM,   /** Not enough memory. */
-	um_ERRINVAL, /** Invalid state or arguments. */
-	um_ERRDOM,   /** Domain or range error. */
-	um_ERRSYN,   /** Syntax error. */
-	um_ERRCNV,   /** Conversion error. */
-	um_ERRENC,   /** Encoding error. */
-	um_ERRMAX    /** Maximum error code, doesn't represent an error. */
-};
-
-enum um_ELockAction {
-
-	um_LA_READ,
-	um_LA_TRYREAD,
-	um_LA_WRITE,
-	um_LA_TRYWRITE
-};
-
-enum um_EInputFormat {
-
-	um_IF_UNKNOWN = 0,
-	um_IF_SOURCE,
-	um_IF_BYTECODE,
-	um_IF_AST
-};
-
-enum um_Bool {
-	um_False = 0,
-	um_True
-};
-
-typedef struct um_Machine um_Machine;
-typedef enum um_Bool um_Bool;
-typedef enum um_EEcode um_EEcode;
-typedef enum um_ELockAction um_ELockAction;
-typedef enum um_EInputFormat um_EInputFormat;
-
-typedef um_EEcode (*um_FAlloc)(
-	void *ptr,
-	void **obj,
-	size_t oldsz,
-	size_t newsz,
-	unsigned int alignment);
-
-typedef um_EEcode (*um_FCfunction)(um_Machine *M);
-typedef void (*um_FLock)(um_Machine *M, void *ptr, um_ELockAction action);
-typedef um_EEcode (*um_FBuffer)(void *data, char *ptr, long *ptrsz);
-
-#endif /* UMBRADEF_H_ */

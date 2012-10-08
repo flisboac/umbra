@@ -1,3 +1,6 @@
+/**
+ * @file umbracfg.h
+ */
 
 #ifndef UMBRACFG_H_
 #define UMBRACFG_H_
@@ -8,7 +11,102 @@
  * (Or i'm just too lazy to get it done...)
  */
 
-#include "umbradef.h"
+
+/*
+ * [ C O N S T A N T S ] =======================================================
+ * Please don't change!
+ */
+
+
+#define um_INT_INT 1
+#define um_INT_LONG 2
+#define um_INT_LLONG 3
+#define um_FLOAT_FLOAT 4
+#define um_FLOAT_DOUBLE 5
+#define um_FLOAT_LDOUBLE 6
+#define um_MAJORBITS 6
+#define um_MINORBITS 11
+#define um_PATCHBITS 15
+#define um_STRQT(s) #s
+#define um_STRFY(s) um_STRQT(s)
+
+
+/*
+ * [ C O N F I G ] =============================================================
+ * Please change!
+ */
+
+
+#define um_NAME "umbra"/*@@APPNAME@@*/
+#define um_VENDOR "vanilla"/*@@VENDORNAME@@*/
+#define um_RELEASETYPE "beta"/*@@RELEASETYPE@@*/
+#define um_MAJORVERSION (0)/*@@MAJORVERSION@@*/
+#define um_MINORVERSION (1)/*@@MINORVERSION@@*/
+#define um_PATCHVERSION (0)/*@@PATCHVERSION@@*/
+#define um_INTTYPE (um_INT_LONG)/*@@INTTYPE@@*/
+#define um_FLOATTYPE (um_FLOAT_DOUBLE)/*@@FLOATTYPE@@*/
+
+
+/*
+ * [ V E R S I O N ] ===========================================================
+ * Do not change. Don't expect the generated number to be endian-independent or
+ * exchangeable between different build sessions even on the same system.
+ */
+
+typedef um_Version_t {
+
+	unsigned int major;
+	unsigned int minor;
+	unsigned int patch;
+	const char* name;
+	const char* vendor;
+	const char* release;
+} um_Version;
+
+#define um_MAJORMASK ((0xffffffffL << (um_MINORBITS + um_PATCHBITS)) & 0xffffffffL)
+#define um_MINORMASK (((0xffffffffL << (um_PATCHBITS)) & (~um_MAJORMASK)) & 0xffffffffL)
+#define um_PATCHMASK (0xffffffffL & (~(um_MAJORMASK | um_MINORMASK)))
+#define um_MAKEVER(major, minor, patch) \
+    ((((major) << (um_MINORBITS + um_PATCHBITS)) & um_MAJORMASK) | \
+    (((minor) << um_PATCHBITS) & um_MINORMASK) | \
+    ((patch) & um_PATCHMASK)) & 0xffffffffL
+#define um_MAJOR(ver) ((ver) & um_MAJORMASK) >> (um_MINORBITS + um_PATCHBITS)
+#define um_MINOR(ver) ((ver) & um_MINORMASK) >> (um_PATCHBITS)
+#define um_PATCH(ver) ((ver) & um_PATCHMASK)
+
+#define um_VERSION um_MAKEVER(um_MAJORVERSION, um_MINORVERSION, um_PATCHVERSION)
+
+#ifdef um_RELEASETYPE
+#   ifdef um_VENDOR
+#       define um_RELEASENAME \
+            um_VENDOR " " um_NAME " " \
+            um_STRFY(um_MAJORVERSION) "." \
+            um_STRFY(um_MINORVERSION) "." \
+            um_STRFY(um_PATCHVERSION) "-" \
+            um_RELEASETYPE
+#   else
+#       define um_RELEASENAME \
+            um_NAME " " \
+            um_STRFY(um_MAJORVERSION) "." \
+            um_STRFY(um_MINORVERSION) "." \
+            um_STRFY(um_PATCHVERSION) "-" \
+            um_RELEASETYPE
+#   endif
+#else
+#   ifdef um_VENDOR
+#       define um_RELEASENAME \
+            um_VENDOR " " um_NAME " " \
+            um_STRFY(um_MAJORVERSION) "." \
+            um_STRFY(um_MINORVERSION) "." \
+            um_STRFY(um_PATCHVERSION)
+#   else
+#       define um_RELEASENAME \
+            um_NAME " " \
+            um_STRFY(um_MAJORVERSION) "." \
+            um_STRFY(um_MINORVERSION) "." \
+            um_STRFY(um_PATCHVERSION)
+#   endif
+#endif
 
 #ifndef um_INTTYPE
 #	define um_INTTYPE um_INT_LONG
@@ -19,122 +117,56 @@
 #endif
 
 
-/* 
- * Don't change below this comment, unless you know what you're doing.
+/*
+ * [ M A R K E R S ] ===========================================================
+ * Change if you know what you're doing...
  */
 
-/* 
- * FIMPORT, FEXPORT - API/Interface (Functions)
- * DIMPORT, DEXPORT - Data, globals, etc.
- */
 
-#if defined(__WIN32) && !um_STATIC
-#	define um_FIMPORT __declspec(dllimport)
-#	define um_FEXPORT __declspec(dllexport)
-#	define um_DIMPORT um_FIMPORT
-#	define um_DEXPORT um_FEXPORT
+#if !defined(um_STATIC) && defined(_WIN32)
+#   define um_FIMPORT __declspec(dllimport)
+#   define um_FEXPORT __declspec(dllexport)
+#   define um_DIMPORT um_FIMPORT
+#   define um_DEXPORT um_FEXPORT
 #else
-#	define um_FIMPORT extern
-#	define um_FEXPORT 
-#	define um_DIMPORT extern
-#	define um_DEXPORT 
+#   define um_FIMPORT extern
+#   define um_FEXPORT
+#   define um_DIMPORT um_FIMPORT
+#   define um_DEXPORT
 #endif
 
-#if um_BUILDING
-#	define um_API   um_FEXPORT
-#	define um_IAPI  static
-#	define um_DATA  um_DEXPORT
-#	define um_IDATA static
+
+#ifdef __cplusplus
+#	define um_EXPORTC
+#	define um_EXPORTC_BEGIN
+#	define um_EXPORTC_END
 #else
-#	define um_API   um_FIMPORT
-#	define um_IAPI  
-#	define um_DATA  um_DIMPORT
-#	define um_IDATA 
+#	define um_EXPORTC export "C"
+#	define um_EXPORTC_BEGIN export "C" {
+#	define um_EXPORTC_END   }
 #endif
 
-#if um_INTTYPE == um_INT_INT
-#	include <limits.h>
-#	define um_TYPE_INT int
-#	define um_INTMAX   INT_MAX
-#	define um_INTMIN   INT_MIN
-#	define um_INTSFMT  ""
-#	define um_INTFROMA um_atoi
-#	define uI(i)       i
-#elif um_INTTYPE == um_INT_LONG
-#	include <limits.h>
-#	define um_TYPE_INT long int
-#	define um_INTMAX   INT_MAX
-#	define um_INTMIN   INT_MIN
-#	define um_INTSFMT  "l"
-#	define um_INTFROMA um_atol
-#	define uI(i)       i ## L
-#elif um_INTTYPE == um_INT_LLONG
-#	include <limits.h>
-#	define um_TYPE_INT long long int
-#	define um_INTMAX   LLONG_MAX
-#	define um_INTMIN   LLONG_MIN
-#	define um_INTFMT   "ll"
-#	define um_INTFROMA um_atoll
-#	define uI(i)       i ## LL
+
+#if defined(um_BUILDING)
+#   define um_API um_FEXPORT
+#   define um_DATA um_DEXPORT
+#   if defined(um_STATIC)
+#       define um_IAPI static
+#       define um_IDATA
+#   else
+#       if defined(__GNUC__) && ((__GNUC__*100 + __GNUC_MINOR__) >= 302) && \
+                defined(__ELF__)
+#           define um_IAPI __attribute__((visibility("hidden"))) extern
+#           define um_IDATA um_IAPI
+#       else
+#           define um_IAPI extern
+#           define um_IDATA extern
+#       endif
+#   endif
 #else
-#	error Unknown integer type. For now, non-standard types are not allowed.
+#   define um_API um_FIMPORT
+#   define um_DATA um_DIMPORT
 #endif
 
-#if um_FLOATTYPE == um_FLOAT_FLOAT
-#	include <float.h>
-#	define um_TYPE_FLOAT   float
-#	define um_FLOATMAX     FLT_MAX
-#	define um_FLOATMIN     FLT_MIN
-#	define um_FLOATDIG     FLT_DIG
-#	define um_FLOATEPS     FLT_EPSILON
-#	define um_FLOATSFMT    ""
-#	define um_FLOATNAME    um_STRFY(um_FLOAT)
-#	define um_FLOATFROMA   um_atof
-#	define uF(n)           n ## f
-#elif um_FLOATTYPE == um_FLOAT_DOUBLE
-#	include <float.h>
-#	define um_TYPE_FLOAT   double
-#	define um_FLOATMAX     DBL_MAX
-#	define um_FLOATMIN     DBL_MIN
-#	define um_FLOATDIG     DBL_DIG
-#	define um_FLOATEPS     DBL_EPSILON
-#	define um_FLOATSFMT    "l"
-#	define um_FLOATFROMA   um_atod
-#	define um_FLOATNAME    um_STRFY(um_FLOAT)
-#	define uF(n)           n
-#elif um_FLOATTYPE == um_FLOAT_LDOUBLE
-#	include <float.h>
-#	define um_TYPE_FLOAT   long double
-#	define um_FLOATMAX     LDBL_MAX
-#	define um_FLOATMIN     LDBL_MIN
-#	define um_FLOATDIG     LDBL_DIG
-#	define um_FLOATEPS     LDBL_EPSILON
-#	define um_FLOATNAME    um_STRFY(um_FLOAT)
-#	define um_FLOATFROMA   um_atold
-#	define um_FLOATSFMT    "L"
-#	define uF(n)           n ## l
-#else
-#	error Unknown float type. For now, non-standard types are not allowed.
-#endif
-
-
-#define um_FLOATTOA(n, s, sz) snprintf(s, sz, um_FLOATFMT, n)
-#define um_INTTOA(n, s, sz)   snprintf(s, sz, um_INTFMT, n)
-#define um_INTFMT    "%" um_INTSFMT "d"
-#define um_FLOATFMT  "%" um_FLOATSFMT "g"
-#define um_INTNAME   um_STRFY(um_TYPE_INT)
-#define um_FLOATNAME um_STRFY(um_TYPE_FLOAT)
-typedef um_TYPE_INT um_Int;
-typedef um_TYPE_FLOAT um_Float;
-
-umAPI int um_atoi(const char *s);
-umAPI long int um_atol(const char *s);
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-	umAPI long long int um_atoll(const char *s);
-#endif
-
-umAPI float um_atof(const char *s);
-umAPI double um_atod(const char *s);
-umAPI long double um_atold(const char *s);
 
 #endif

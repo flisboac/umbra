@@ -1,6 +1,5 @@
-. .. .cproject .geany .git .project .pydevproject .settings
-**/.*
-**/*~
-/build/**
-/misc/**
-**.sublime-*
+build
+.*
+waf-*
+*.sublime-project
+*.sublime-workspace
