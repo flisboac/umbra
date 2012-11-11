@@ -14,10 +14,6 @@
  * All in name of organization.
  */
 
-#ifndef um_INTTYPE
-#	define um_INTTYPE um_INT_LONG
-#endif
-
 #if um_INTTYPE == um_INT_INT
 #	include <limits.h>
 #	define um_TYPE_INT int
@@ -35,6 +31,9 @@
 #	define um_INTFROMA um_atol
 #	define uI(i)       i ## L
 #elif um_INTTYPE == um_INT_LLONG
+#	if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L
+#		error C99 support is needed for using 'long long' integers.
+#	endif
 #	include <limits.h>
 #	define um_TYPE_INT long long int
 #	define um_INTMAX   LLONG_MAX
@@ -96,16 +95,5 @@
 #define um_FLOATNAME um_STRFY(um_TYPE_FLOAT)
 typedef um_TYPE_INT um_Int;
 typedef um_TYPE_FLOAT um_Float;
-
-umAPI int um_atoi(const char *s);
-umAPI long int um_atol(const char *s);
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-	umAPI long long int um_atoll(const char *s);
-#endif
-
-umAPI float um_atof(const char *s);
-umAPI double um_atod(const char *s);
-umAPI long double um_atold(const char *s);
-
 
 #endif

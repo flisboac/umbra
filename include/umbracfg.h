@@ -43,25 +43,17 @@
 #define um_MAJORVERSION (0)/*@@MAJORVERSION@@*/
 #define um_MINORVERSION (1)/*@@MINORVERSION@@*/
 #define um_PATCHVERSION (0)/*@@PATCHVERSION@@*/
-#define um_INTTYPE (um_INT_LONG)/*@@INTTYPE@@*/
-#define um_FLOATTYPE (um_FLOAT_DOUBLE)/*@@FLOATTYPE@@*/
+#define um_INTTYPE um_INT_LONG/*@@INTTYPE@@*/
+#define um_FLOATTYPE um_FLOAT_DOUBLE/*@@FLOATTYPE@@*/
 
 
 /*
  * [ V E R S I O N ] ===========================================================
- * Do not change. Don't expect the generated number to be endian-independent or
- * exchangeable between different build sessions even on the same system.
+ * Do not change. Don't expect um_VERSION to be endian-independent or
+ * exchangeable between different build sessions even on the same target.
+ * Still, its use in header files is valid.
  */
 
-typedef um_Version_t {
-
-	unsigned int major;
-	unsigned int minor;
-	unsigned int patch;
-	const char* name;
-	const char* vendor;
-	const char* release;
-} um_Version;
 
 #define um_MAJORMASK ((0xffffffffL << (um_MINORBITS + um_PATCHBITS)) & 0xffffffffL)
 #define um_MINORMASK (((0xffffffffL << (um_PATCHBITS)) & (~um_MAJORMASK)) & 0xffffffffL)
@@ -106,14 +98,6 @@ typedef um_Version_t {
             um_STRFY(um_MINORVERSION) "." \
             um_STRFY(um_PATCHVERSION)
 #   endif
-#endif
-
-#ifndef um_INTTYPE
-#	define um_INTTYPE um_INT_LONG
-#endif
-
-#ifndef um_FLOATTYPE
-#	define um_FLOATTYPE um_FLOAT_DOUBLE
 #endif
 
 
